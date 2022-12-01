@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { getCurrentCustomer, saveCustomerUpdates } from "../ApiManager"
 
 export const CustomerForm = (event) => {
     const [feedback, setFeedback] = useState("")
@@ -20,26 +21,16 @@ const honeyUserObject = JSON.parse(localHoneyUser)
 
 //Get current customer profile info from API and update state
 useEffect(() => {
-    fetch(`http://localhost:8088/customers?userId=${honeyUserObject.id}`)
-    .then(response => response.json())
-    .then((dataFromCustomersArrayForCurrentUser) => {
-        const customerObject = dataFromCustomersArrayForCurrentUser[0]
-        setProfile(customerObject)
-    })
-}, [])
+    let currentCustomerObject = getCurrentCustomer(honeyUserObject, setProfile)
+    setProfile(currentCustomerObject)
+    },
+    [])
 
 const handleSaveButtonClick = (event) => {
     event.preventDefault()
 
     //PUT to update profile, display submitted message when done
-    return fetch(`http://localhost:8088/customers/${profile.id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(profile)
-    })
-    .then(response => response.json())
+    saveCustomerUpdates(profile)
     .then(() => {
         setFeedback("Profile updates successfully sent to the dark lords of the metaverse")
     })
@@ -61,7 +52,7 @@ return (
                     required autoFocus
                     type="text"
                     className="form-control"
-                    value={profile.address}
+                    value={profile?.address}
                     onChange={
                         (evt) => {
                             // TODO: Update specialty property
@@ -77,7 +68,7 @@ return (
                 <label htmlFor="name">Phone Number:</label>
                 <input type="text"
                     className="form-control"
-                    value={profile.phoneNumber}
+                    value={profile?.phoneNumber}
                     onChange={
                         (evt) => {
                             // TODO: Update rate property
